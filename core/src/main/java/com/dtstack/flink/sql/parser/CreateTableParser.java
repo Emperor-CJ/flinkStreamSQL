@@ -22,6 +22,7 @@ package com.dtstack.flink.sql.parser;
 
 import com.dtstack.flink.sql.util.DtStringUtil;
 import com.google.common.collect.Maps;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ public class CreateTableParser implements IParser {
     @Override
     public void parseSql(String sql, SqlTree sqlTree) {
         Matcher matcher = PATTERN.matcher(sql);
+        //System.out.println(matcher.find() == true);
         if(matcher.find()){
             String tableName = matcher.group(1);
             String fieldsInfoStr = matcher.group(2);
@@ -67,7 +69,32 @@ public class CreateTableParser implements IParser {
             result.setPropMap(props);
 
             sqlTree.addPreDealTableInfo(tableName, result);
+        }else {
+            System.out.println("==========");
         }
+    }
+
+    @Test
+    public void test(){
+        CreateTableParser createTableParser = new CreateTableParser();
+
+        SqlTree sqlTree = new SqlTree();
+        String sql = "CREATE TABLE source_student ( \n" +
+                "     id    INT, \n" +
+                "     name varchar, \n" +
+                "     age  INT, \n" +
+                "     sex  varchar \n" +
+                "  )WITH(\n" +
+                "    type ='kafka',\n" +
+                "    groupId='t3_group_lingqu_lingqu',\n" +
+                "    bootstrapServers ='172.16.19.171:9092,172.16.19.172:9092,172.16.19.173:9092',\n" +
+                "    topic ='t3_lingqu.test'\n" +
+                " )";
+        sql = DtStringUtil.dealSqlComment(sql)
+                .replaceAll("\r\n", " ")
+                .replaceAll("\n", " ")
+                .replace("\t", " ").trim();
+        createTableParser.parseSql(sql,sqlTree);
     }
 
     private Map parseProp(String propsStr){

@@ -86,15 +86,15 @@ public class InsertSqlParser implements IParser {
                 parseNode(sqlSource, sqlParseResult);
                 break;
             case SELECT:
-                SqlSelect sqlSelect = (SqlSelect) sqlNode;
-                if (parentIsInsert) {
-                    rebuildSelectNode(sqlSelect.getSelectList(), sqlSelect);
-                }
+//                SqlSelect sqlSelect = (SqlSelect) sqlNode;
+//                if (parentIsInsert) {
+//                    rebuildSelectNode(sqlSelect.getSelectList(), sqlSelect);
+//                }
                 SqlNode sqlFrom = ((SqlSelect) sqlNode).getFrom();
                 if (sqlFrom.getKind() == IDENTIFIER) {
                     sqlParseResult.addSourceTable(sqlFrom.toString());
                 } else {
-                    parentIsInsert = false;
+                   // parentIsInsert = false;
                     parseNode(sqlFrom, sqlParseResult);
                 }
                 break;
