@@ -32,35 +32,13 @@ public class DingdingSinkParser extends AbstractTableParser {
 
         dingdingSinkTableInfo.setTimeInternal(time);
 
-        dingdingSinkTableInfo.setKeyWord(String.valueOf(props.get(DingdingSinkTableInfo.KEYWORD)));
+        dingdingSinkTableInfo.setKeyWord(String.valueOf(props.getOrDefault(DingdingSinkTableInfo.KEYWORD, "")));
 
         String msgType = (String) props.getOrDefault(DingdingSinkTableInfo.TEXTTYPE, "markdown");
 
         dingdingSinkTableInfo.setTextType(msgType);
 
         dingdingSinkTableInfo.setSecretKey((String) props.getOrDefault(DingdingSinkTableInfo.SECRETKEY, ""));
-
-
-        String mapStr = (String) props.getOrDefault(DingdingSinkTableInfo.NAMEMAP, "");
-        if (mapStr.length() > 0) {
-            Gson gson = new Gson();
-            Map<String, String> map = new HashMap<String, String>();
-            map = gson.fromJson(mapStr, map.getClass());
-            dingdingSinkTableInfo.setNameMap(map);
-        } else {
-            Map<String, String> map = new HashMap<>();
-            map.put("w_level", "告警级别");
-            map.put("w_host", "主机");
-            map.put("w_ip", "主机地址");
-            map.put("w_time", "时间");
-            map.put("w_status", "当前状态");
-            map.put("w_info", "告警信息");
-            map.put("w_detail", "问题详情");
-            map.put("w_id", "事件ID");
-            map.put("w_range", "问题影响范围");
-            map.put("w_linkuser", "问题联系人");
-            dingdingSinkTableInfo.setNameMap(map);
-        }
 
 
         dingdingSinkTableInfo.check();

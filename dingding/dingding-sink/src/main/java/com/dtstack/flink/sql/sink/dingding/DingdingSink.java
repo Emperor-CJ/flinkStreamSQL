@@ -54,13 +54,11 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
         DataStream<Row> dt = dataStream.filter((FilterFunction<Tuple2<Boolean, Row>>) booleanRowTuple2 -> booleanRowTuple2.f0).process(new ProcessFunction<Tuple2<Boolean, Row>, Row>() {
             @Override
             public void processElement(Tuple2<Boolean, Row> booleanRowTuple2, Context context, Collector<Row> collector) throws Exception {
-                System.out.println("row ==============" + booleanRowTuple2);
-                System.out.println("dingdingSinkTableInfo =================== {}" + dingdingSinkTableInfo + "  field  " + dingdingSinkTableInfo.getFieldList() + " list "+ dingdingSinkTableInfo.getFields());
                 collector.collect(booleanRowTuple2.f1);
             }
         });
         DataStream<Row> disDataStream = dt.keyBy(new DistinctKeySelector(collectIndex)).window(window).trigger(new DistinctTrigger()).process(new DistinctProcessWindowFunction());
-        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo)).setParallelism(1);
+        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo));
     }
 
     @Override
@@ -101,8 +99,7 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
 
         @Override
         public void invoke(Row value, Context context) throws Exception {
-            System.out.println("vale =========" + value);
-            dingdingService.emit(dingdingSinkTableInfo, value);
+            dingdingService.emit(dingdingSinkTableInfo, value, null);
         }
     }
 

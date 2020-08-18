@@ -14,7 +14,7 @@ public class SecretKeyUtil {
         mac.init(new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256"));
         byte[] signData = mac.doFinal(stringToSign.getBytes("UTF-8"));
         String sign = URLEncoder.encode(new String(Base64.encodeBase64(signData)),"UTF-8");
-        System.out.println(sign);
+        //System.out.println(sign);
         return sign + "==" + timestamp;
     }
 }

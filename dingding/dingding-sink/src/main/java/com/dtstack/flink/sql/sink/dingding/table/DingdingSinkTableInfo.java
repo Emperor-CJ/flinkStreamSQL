@@ -24,8 +24,6 @@ public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
 
     public static final String TEXTTYPE = "msgtype";
 
-    public static final String NAMEMAP = "namemap";
-
     public static final String URL = "https://oapi.dingtalk.com/robot/send?access_token=";
 
     private String token;

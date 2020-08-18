@@ -8,20 +8,20 @@ import com.dtstack.flink.sql.sink.dingding.table.DingdingSinkTableInfo;
 import com.taobao.api.ApiException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.types.Row;
+import com.alibaba.fastjson.JSONObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DingdingService implements Serializable {
 
-    private String title;
-    private Integer level;
+    private List<String> links;
 
-    public void emit(DingdingSinkTableInfo dingdingSinkTableInfo, Row row) throws Exception {
-
-        Integer index = Arrays.asList(dingdingSinkTableInfo.getFields()).indexOf("w_level");
-        level = (Integer) row.getField(index);
-        title = Level.levelTitleInfo(level);
+    public synchronized void emit(DingdingSinkTableInfo dingdingSinkTableInfo, Row row, List<String> linkList) throws Exception {
 
         String boltUrl = DingdingSinkTableInfo.URL + dingdingSinkTableInfo.getToken();
         if (!StringUtils.isEmpty(dingdingSinkTableInfo.getSecretKey())) {
@@ -35,7 +35,7 @@ public class DingdingService implements Serializable {
         /**
          * @用户
          */
-        getLinkUser(dingdingSinkTableInfo, at, row);
+        getLinkUser(dingdingSinkTableInfo, at, row, linkList);
 
         request.setAt(at);
 
@@ -51,7 +51,17 @@ public class DingdingService implements Serializable {
         } catch (ApiException e) {
             e.printStackTrace();
         }
-        System.out.println(response.getBody());
+
+        String res = response.getBody();
+        System.out.println("res-body" + res);
+        if ((Integer) JSONObject.parseObject(res).get("errcode") == 0) {
+            if (dingdingSinkTableInfo.getTextType().equals("markdown") && links != null && links.size() != 0) {
+                DingdingService dingdingService = new DingdingService();
+                DingdingSinkTableInfo dingdingSinkTableInfo1 = ObjClonerSeiz.CloneObj(dingdingSinkTableInfo);
+                dingdingSinkTableInfo1.setTextType("text");
+                dingdingService.emit(dingdingSinkTableInfo1, Row.of("请及时关注"), links);
+            }
+        }
     }
 
     private void dealMsgText(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest request, Row row) throws Exception {
@@ -70,61 +80,63 @@ public class DingdingService implements Serializable {
     private void testMsg(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest request, Row row) {
         request.setMsgtype("text");
         OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
-        String content = msg(dingdingSinkTableInfo, row);
-        text.setContent(content);
+        text.setContent(msg(row));
         request.setText(text);
     }
 
-    private void markdownMsg(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest request, Row row) {
+    private void markdownMsg(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest request, Row row) throws InterruptedException {
         request.setMsgtype("markdown");
         OapiRobotSendRequest.Markdown markdown = new OapiRobotSendRequest.Markdown();
-        markdown.setTitle(title);
-        markdown.setText("#### 杭州天气 @156xxxx8827\n" +
-                "> 9度，西北风1级，空气良89，相对温度73%\n\n" +
-                "> ![screenshot](https://gw.alicdn.com/tfs/TB1ut3xxbsrBKNjSZFpXXcXhFXa-846-786.png)\n" +
-                "> ###### 10点20分发布 [天气](http://www.thinkpage.cn/) \n");
+        markdown.setTitle(dingdingSinkTableInfo.getKeyWord());
+        markdown.setText(msg(row));
         request.setMarkdown(markdown);
+
     }
 
-    private String msg(DingdingSinkTableInfo dingdingSinkTableInfo, Row row) {
+    private String msg(Row row) {
         StringBuffer sb = new StringBuffer();
-        sb.append(title).append("\n");
-        for (int i = 0; i < dingdingSinkTableInfo.getFields().length; i++) {
-            if (dingdingSinkTableInfo.getFields()[i].contains("w_level")) {
-                continue;
-            }
-            String fieldName = dingdingSinkTableInfo.getFields()[i];
-            String key = (String) dingdingSinkTableInfo.getNameMap().getOrDefault(fieldName, fieldName);
-            if (fieldName.contains("w_host") || fieldName.contains("w_time")) {
-                key = Level.levelInfo(level) + key;
-            }
-            sb.append(key).append(" : ").append(row.getField(i)).append("\n");
+
+        for (int i = 0; i < row.getArity(); i++) {
+            sb.append(row.getField(i)).append(" \n");
         }
 
         return sb.toString();
     }
 
 
-    private void getLinkUser(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest.At at, Row row) {
+    private void getLinkUser(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest.At at, Row row, List<String> linkList) {
+        links = new ArrayList<>();
         if (dingdingSinkTableInfo.getMobiles() == null || dingdingSinkTableInfo.getMobiles().length == 0) {
+            System.out.println("0");
             at.setIsAtAll(true);
         } else if (dingdingSinkTableInfo.getMobiles().length == 1 && Arrays.asList(dingdingSinkTableInfo.getFields()).contains(dingdingSinkTableInfo.getMobiles()[0])) {
             Integer index = Arrays.asList(dingdingSinkTableInfo.getFields()).indexOf(dingdingSinkTableInfo.getMobiles()[0]);
-            String link = (String) row.getField(index);
-            if (StringUtils.isEmpty(link)) {
-                at.setIsAtAll(true);
+            if (linkList != null && linkList.size() != 0) {
+                System.out.println("1");
+                at.setAtMobiles(linkList);
+                at.setIsAtAll(false);
             } else {
                 try {
-                    String[] s = link.split(" ");
-                    String mobile = s[0].split("-")[1].trim();
-                    at.setAtMobiles(Arrays.asList(mobile));
+                    String link = (String) row.getField(index);
+                    Pattern p = Pattern.compile("1[345678]\\d{9}");
+                    Matcher m = p.matcher(link);
+
+                    while (m.find()) {
+                        links.add(m.group());
+                    }
+                    at.setAtMobiles(links);
                     at.setIsAtAll(false);
-                }catch (Exception e){
+                } catch (Exception e) {
                     at.setIsAtAll(true);
                 }
             }
         } else {
-            at.setAtMobiles(Arrays.asList(dingdingSinkTableInfo.getMobiles()));
+            if (linkList != null && linkList.size() != 0) {
+                at.setAtMobiles(linkList);
+            } else {
+                links = Arrays.asList(dingdingSinkTableInfo.getMobiles());
+                at.setAtMobiles(links);
+            }
             at.setIsAtAll(false);
         }
     }
