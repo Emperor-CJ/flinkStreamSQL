@@ -107,12 +107,10 @@ public class DingdingService implements Serializable {
     private void getLinkUser(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest.At at, Row row, List<String> linkList) {
         links = new ArrayList<>();
         if (dingdingSinkTableInfo.getMobiles() == null || dingdingSinkTableInfo.getMobiles().length == 0) {
-            System.out.println("0");
             at.setIsAtAll(true);
         } else if (dingdingSinkTableInfo.getMobiles().length == 1 && Arrays.asList(dingdingSinkTableInfo.getFields()).contains(dingdingSinkTableInfo.getMobiles()[0])) {
             Integer index = Arrays.asList(dingdingSinkTableInfo.getFields()).indexOf(dingdingSinkTableInfo.getMobiles()[0]);
             if (linkList != null && linkList.size() != 0) {
-                System.out.println("1");
                 at.setAtMobiles(linkList);
                 at.setIsAtAll(false);
             } else {

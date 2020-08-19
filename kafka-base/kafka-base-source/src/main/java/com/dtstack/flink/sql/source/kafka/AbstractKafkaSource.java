@@ -86,7 +86,8 @@ public abstract class AbstractKafkaSource implements IStreamSourceGener<Table> {
             Map<KafkaTopicPartition, Long> specificStartupOffsets = buildOffsetMap(offset, topicName);
             kafkaSrc.setStartFromSpecificOffsets(specificStartupOffsets);
         } else {
-            kafkaSrc.setStartFromLatest();
+            kafkaSrc.setStartFromGroupOffsets();
+            //kafkaSrc.setStartFromLatest();
         }
     }
 

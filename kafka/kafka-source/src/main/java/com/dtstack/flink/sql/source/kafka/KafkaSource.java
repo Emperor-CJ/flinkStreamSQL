@@ -46,7 +46,7 @@ public class KafkaSource extends AbstractKafkaSource {
         Properties kafkaProperties = getKafkaProperties(kafkaSourceTableInfo);
         TypeInformation<Row> typeInformation = getRowTypeInformation(kafkaSourceTableInfo);
         FlinkKafkaConsumer<Row> kafkaSrc = (FlinkKafkaConsumer<Row>) new KafkaConsumerFactory().createKafkaTableSource(kafkaSourceTableInfo, typeInformation, kafkaProperties);
-        //setStartPosition(kafkaSourceTableInfo.getOffsetReset(), topicName, kafkaSrc);
+        setStartPosition(kafkaSourceTableInfo.getOffsetReset(), topicName, kafkaSrc);
         String sourceOperatorName = generateOperatorName(sourceTableInfo.getName(), topicName);
         DataStreamSource kafkaSource = env.addSource(kafkaSrc, sourceOperatorName, typeInformation);
         kafkaSource.setParallelism(kafkaSourceTableInfo.getParallelism());
