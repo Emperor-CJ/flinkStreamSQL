@@ -32,7 +32,7 @@ public class DingdingSinkParser extends AbstractTableParser {
 
         dingdingSinkTableInfo.setTimeInternal(time);
 
-        dingdingSinkTableInfo.setKeyWord(String.valueOf(props.getOrDefault(DingdingSinkTableInfo.KEYWORD, "")));
+        dingdingSinkTableInfo.setKeyWord(String.valueOf(props.getOrDefault(DingdingSinkTableInfo.KEYWORD, "监控告警")));
 
         String msgType = (String) props.getOrDefault(DingdingSinkTableInfo.TEXTTYPE, "markdown");
 
