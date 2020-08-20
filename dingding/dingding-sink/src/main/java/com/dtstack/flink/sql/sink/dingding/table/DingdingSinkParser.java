@@ -34,6 +34,8 @@ public class DingdingSinkParser extends AbstractTableParser {
 
         dingdingSinkTableInfo.setKeyWord(String.valueOf(props.getOrDefault(DingdingSinkTableInfo.KEYWORD, "监控告警")));
 
+        dingdingSinkTableInfo.setAtLink(String.valueOf(props.getOrDefault(DingdingSinkTableInfo.ATLink, "0")));
+
         String msgType = (String) props.getOrDefault(DingdingSinkTableInfo.TEXTTYPE, "markdown");
 
         dingdingSinkTableInfo.setTextType(msgType);

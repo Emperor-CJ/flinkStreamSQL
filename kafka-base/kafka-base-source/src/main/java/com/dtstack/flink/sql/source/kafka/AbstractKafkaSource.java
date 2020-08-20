@@ -81,10 +81,12 @@ public abstract class AbstractKafkaSource implements IStreamSourceGener<Table> {
 
     protected void setStartPosition(String offset, String topicName, FlinkKafkaConsumerBase<Row> kafkaSrc) {
         if (StringUtils.equalsIgnoreCase(offset, EKafkaOffset.EARLIEST.name())) {
-            kafkaSrc.setStartFromEarliest();
+            kafkaSrc.setStartFromGroupOffsets();
         } else if (DtStringUtil.isJson(offset)) {
             Map<KafkaTopicPartition, Long> specificStartupOffsets = buildOffsetMap(offset, topicName);
             kafkaSrc.setStartFromSpecificOffsets(specificStartupOffsets);
+        }   if (StringUtils.equalsIgnoreCase(offset, EKafkaOffset.LATEST.name())) {
+            kafkaSrc.setStartFromLatest();
         } else {
             kafkaSrc.setStartFromGroupOffsets();
             //kafkaSrc.setStartFromLatest();

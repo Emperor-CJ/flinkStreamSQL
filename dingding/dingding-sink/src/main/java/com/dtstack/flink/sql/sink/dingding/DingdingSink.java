@@ -26,6 +26,12 @@ import java.util.stream.Collectors;
 
 public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGener<DingdingSink>, Serializable {
 
+    private static String alarmGroupName = "alarmGroupName";
+
+    private static String alarmGroupToken = "alarmGroupToken";
+
+    private static String alarmGroupSecretKey = "alarmGroupSecretKey";
+
     private DingdingSinkTableInfo dingdingSinkTableInfo;
 
     protected String[] fieldNames;
@@ -33,6 +39,12 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
     private TypeInformation[] fieldTypes;
 
     private List<Integer> collectIndex;
+
+    private Integer alarmGroupNameIndex;
+
+    private Integer alarmGroupTokenIndex;
+
+    private Integer alarmGroupSecretKeyIndex;
 
     private TumblingProcessingTimeWindows window;
 
@@ -58,7 +70,7 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
             }
         });
         DataStream<Row> disDataStream = dt.keyBy(new DistinctKeySelector(collectIndex)).window(window).trigger(new DistinctTrigger()).process(new DistinctProcessWindowFunction());
-        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo));
+        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo,alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex));
     }
 
     @Override
@@ -85,21 +97,32 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
             List<String> list1 = Arrays.asList(dingdingSinkTableInfo.getDistincts());
             collectIndex = list1.stream().map(list::indexOf).collect(Collectors.toList());
         }
+        alarmGroupNameIndex = list.indexOf(DingdingSink.alarmGroupName);
+        alarmGroupTokenIndex = list.indexOf(DingdingSink.alarmGroupToken);
+        alarmGroupSecretKeyIndex = list.indexOf(DingdingSink.alarmGroupSecretKey);
         return this;
     }
 
     private static class SinkFunction extends RichSinkFunction<Row> {
         private DingdingService dingdingService;
         private DingdingSinkTableInfo dingdingSinkTableInfo;
+        private Integer alarmGroupNameIndex;
 
-        public SinkFunction(DingdingSinkTableInfo dingdingSinkTableInfo) {
+        private Integer alarmGroupTokenIndex;
+
+        private Integer alarmGroupSecretKeyIndex;
+
+        public SinkFunction(DingdingSinkTableInfo dingdingSinkTableInfo, Integer alarmGroupNameIndex, Integer alarmGroupTokenIndex, Integer alarmGroupSecretKeyIndex) {
             this.dingdingService = new DingdingService();
             this.dingdingSinkTableInfo = dingdingSinkTableInfo;
+            this.alarmGroupNameIndex = alarmGroupNameIndex;
+            this.alarmGroupTokenIndex = alarmGroupTokenIndex;
+            this.alarmGroupSecretKeyIndex = alarmGroupSecretKeyIndex;
         }
 
         @Override
         public void invoke(Row value, Context context) throws Exception {
-            dingdingService.emit(dingdingSinkTableInfo, value, null);
+            dingdingService.emit(dingdingSinkTableInfo, value, null, alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex, null, null);
         }
     }
 

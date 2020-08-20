@@ -1,10 +1,8 @@
 package com.dtstack.flink.sql.sink.dingding.table;
 
 import com.dtstack.flink.sql.table.AbstractTargetTableInfo;
-import com.google.common.base.Preconditions;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
 
@@ -23,6 +21,8 @@ public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
     public static final String SECRETKEY = "secretkey";
 
     public static final String TEXTTYPE = "msgtype";
+
+    public static final String ATLink = "atlink";
 
     public static final String URL = "https://oapi.dingtalk.com/robot/send?access_token=";
 
@@ -56,14 +56,14 @@ public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
      */
     private String secretKey;
 
-    private Map<String, String> nameMap;
+    private String atLink;
 
-    public Map getNameMap() {
-        return nameMap;
+    public String getAtLink() {
+        return atLink;
     }
 
-    public void setNameMap(Map nameMap) {
-        this.nameMap = nameMap;
+    public void setAtLink(String atLink) {
+        this.atLink = atLink;
     }
 
     public String getSecretKey() {
@@ -113,8 +113,6 @@ public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
 
     @Override
     public boolean check() {
-        Preconditions.checkNotNull(token, "dingding token field of url is required");
-
         return true;
     }
 
@@ -148,7 +146,7 @@ public class DingdingSinkTableInfo extends AbstractTargetTableInfo {
                 ", keyWord='" + keyWord + '\'' +
                 ", textType='" + textType + '\'' +
                 ", secretKey='" + secretKey + '\'' +
-                ", nameMap=" + nameMap +
+                ", atLink='" + atLink + '\'' +
                 '}';
     }
 }
