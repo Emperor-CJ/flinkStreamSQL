@@ -70,7 +70,7 @@ public class DingdingSink implements RetractStreamTableSink<Row>, IStreamSinkGen
             }
         });
         DataStream<Row> disDataStream = dt.keyBy(new DistinctKeySelector(collectIndex)).window(window).trigger(new DistinctTrigger()).process(new DistinctProcessWindowFunction());
-        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo,alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex));
+        disDataStream.addSink(new SinkFunction(dingdingSinkTableInfo,alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex)).setParallelism(1);
     }
 
     @Override

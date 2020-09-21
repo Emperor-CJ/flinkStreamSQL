@@ -86,7 +86,7 @@ public class MongoAsyncReqRow extends BaseAsyncReqRow {
 
     public void connMongoDb() throws Exception {
         ConnectionString connectionString = new ConnectionString(getConnectionUrl(mongoSideTableInfo.getAddress(),
-                mongoSideTableInfo.getUserName(), mongoSideTableInfo.getPassword()));
+                mongoSideTableInfo.getUserName(), mongoSideTableInfo.getPassword()) + "/" + mongoSideTableInfo.getDatabase() + "?readPreference=secondaryPreferred");
         MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .build();
@@ -100,6 +100,7 @@ public class MongoAsyncReqRow extends BaseAsyncReqRow {
         BasicDBObject basicDbObject = new BasicDBObject();
         try {
             basicDbObject.putAll(inputParams);
+            System.out.println("input" + inputParams);
             // 填充谓词
             sideInfo.getSideTableInfo().getPredicateInfoes().stream().map(info -> {
                 BasicDBObject filterCondition = MongoUtil.buildFilterObject(info);

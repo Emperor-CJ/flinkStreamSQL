@@ -21,6 +21,7 @@ import com.dtstack.flink.sql.format.FormatType;
 import com.dtstack.flink.sql.format.SerializationMetricWrapper;
 import com.dtstack.flink.sql.sink.kafka.serialization.AvroCRowSerializationSchema;
 import com.dtstack.flink.sql.sink.kafka.serialization.CsvCRowSerializationSchema;
+import com.dtstack.flink.sql.sink.kafka.serialization.CusRowSerializationSchema;
 import com.dtstack.flink.sql.sink.kafka.serialization.JsonCRowSerializationSchema;
 import com.dtstack.flink.sql.sink.kafka.table.KafkaSinkTableInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -75,13 +76,14 @@ public abstract class AbstractKafkaProducerFactory {
             final CsvCRowSerializationSchema.Builder serSchemaBuilder = new CsvCRowSerializationSchema.Builder(typeInformation);
             serSchemaBuilder.setFieldDelimiter(kafkaSinkTableInfo.getFieldDelimiter().toCharArray()[0]);
             serSchemaBuilder.setUpdateMode(kafkaSinkTableInfo.getUpdateMode());
-
             serializationSchema = serSchemaBuilder.build();
         } else if (FormatType.AVRO.name().equalsIgnoreCase(kafkaSinkTableInfo.getSinkDataType())) {
             if (StringUtils.isBlank(kafkaSinkTableInfo.getSchemaString())) {
                 throw new IllegalArgumentException("sinkDataType:" + FormatType.AVRO.name() + " must set schemaString");
             }
             serializationSchema = new AvroCRowSerializationSchema(kafkaSinkTableInfo.getSchemaString(), kafkaSinkTableInfo.getUpdateMode());
+        }else {
+            serializationSchema = new CusRowSerializationSchema();
         }
 
         if (null == serializationSchema) {

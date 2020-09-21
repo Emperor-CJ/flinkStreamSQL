@@ -86,24 +86,25 @@ public class DingdingService implements Serializable {
             e.printStackTrace();
         }
 
-        String res = response.getBody();
-        System.out.println("res-body" + res);
-        if (dingdingSinkTableInfo.getAtLink().equals("1")) {
-            try {
-                if ((Integer) JSONObject.parseObject(res).get("errcode") == 0) {
-                    if (dingdingSinkTableInfo.getTextType().equals("markdown") && links != null && links.size() != 0) {
-                        DingdingService dingdingService = new DingdingService();
-                        DingdingSinkTableInfo dingdingSinkTableInfo1 = ObjClonerSeiz.CloneObj(dingdingSinkTableInfo);
-                        dingdingSinkTableInfo1.setTextType("text");
-                        dingdingService.emit(dingdingSinkTableInfo1, Row.of("请及时关注"), links, alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex, this.token, this.secretKey);
+        if (null != response){
+            String res = response.getBody();
+            System.out.println("res-body" + res);
+            if (dingdingSinkTableInfo.getAtLink().equals("1")) {
+                try {
+                    if ((Integer) JSONObject.parseObject(res).get("errcode") == 0) {
+                        if (dingdingSinkTableInfo.getTextType().equals("markdown") && links != null && links.size() != 0) {
+                            DingdingService dingdingService = new DingdingService();
+                            DingdingSinkTableInfo dingdingSinkTableInfo1 = ObjClonerSeiz.CloneObj(dingdingSinkTableInfo);
+                            dingdingSinkTableInfo1.setTextType("text");
+                            dingdingService.emit(dingdingSinkTableInfo1, Row.of("请及时关注"), links, alarmGroupNameIndex, alarmGroupTokenIndex, alarmGroupSecretKeyIndex, this.token, this.secretKey);
+                        }
                     }
+                }catch (Exception e){
+                    LOG.info(e.getMessage());
                 }
-            }catch (Exception e){
-                LOG.info(e.getMessage());
+
             }
-
         }
-
     }
 
     private void dealMsgText(DingdingSinkTableInfo dingdingSinkTableInfo, OapiRobotSendRequest request, Row row) throws Exception {
@@ -161,7 +162,7 @@ public class DingdingService implements Serializable {
             } else {
                 try {
                     String link = (String) row.getField(index);
-                    Pattern p = Pattern.compile("1[345678]\\d{9}");
+                    Pattern p = Pattern.compile("1[3456789]\\d{9}");
                     Matcher m = p.matcher(link);
 
                     while (m.find()) {
