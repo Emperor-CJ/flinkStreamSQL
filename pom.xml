@@ -23,7 +23,7 @@
         <module>clickhouse</module>
         <module>db2</module>
         <module>impala</module>
-        <module>kingbase</module>
+<!--        <module>kingbase</module>-->
         <module>oceanbase</module>
         <module>polardb</module>
         <module>postgresql</module>
